@@ -21,7 +21,11 @@ import axios from 'axios'
 import { t } from 'i18next'
 
 import { publishAuthSessionEvent } from '@/lib/auth-session-sync'
-import { hasSessionHint } from '@/lib/session-hint'
+import { API_BASE_URL } from '@/lib/api-base'
+import {
+  hasSessionHint,
+  writeSessionHintMirror,
+} from '@/lib/session-hint'
 import {
   useAuthStore,
   type AuthBootstrapState,
@@ -68,7 +72,9 @@ export class AuthRotationError extends Error {
 }
 
 const authClient = axios.create({
-  baseURL: '',
+  // The refresh and logout endpoints live on the backend, which in a
+  // separated deployment is not the page's own origin.
+  baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
     // no-store forbids storage; no-cache also revalidates any older cached response.
@@ -154,6 +160,10 @@ export function applyAuthBundle(
   const previousSID = useAuthStore.getState().auth.session?.sid
   authEpoch += 1
   useAuthStore.getState().auth.setBundle(bundle)
+  // The dashboard now knows a Refresh Cookie exists. Mirroring that lets a
+  // page reload on a separated deployment still attempt a refresh, where the
+  // hint cookie itself lives on the backend's origin and cannot be read.
+  writeSessionHintMirror(true)
   if (synchronizeTabs && previousSID !== bundle.session.sid) {
     publishAuthSessionEvent('authenticated', bundle.session.sid)
   }
@@ -191,6 +201,10 @@ export function clearAuthentication(
   const sid = useAuthStore.getState().auth.session?.sid
   authEpoch += 1
   useAuthStore.getState().auth.reset(bootstrapState)
+  // No Refresh Cookie remains, so no refresh is worth attempting on the next
+  // page load. The mirror is the only record of that in a separated
+  // deployment, so it has to be cleared here rather than left to expire.
+  writeSessionHintMirror(false)
   if (synchronizeTabs && sid) {
     publishAuthSessionEvent('signed_out', sid)
   }

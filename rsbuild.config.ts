@@ -15,9 +15,15 @@ export default defineConfig(({ envMode }) => {
     env.rawPublicVars.VITE_REACT_APP_SERVER_URL ||
     'http://localhost:3000'
 
+  // The backend's public URL. Empty means "same origin", which is the
+  // development setup below (the dev server proxies the API paths) and a
+  // production deployment where a reverse proxy serves both.
+  //
+  // A value here is baked into the bundle: the requests become absolute and
+  // cross-origin, which is what a separately deployed backend needs.
   const isProd = envMode === 'production'
   const devProxy = Object.fromEntries(
-    (['/api', '/v1', '/mj', '/pg'] as const).map((key) => [
+    (['/api', '/v1', '/v1beta', '/mj', '/pg'] as const).map((key) => [
       key,
       { target: serverUrl, changeOrigin: true },
     ])
@@ -56,6 +62,13 @@ export default defineConfig(({ envMode }) => {
       entry: {
         index: './src/main.tsx',
       },
+      // Expose the `VITE_`-prefixed variables to the bundle.
+      //
+      // `loadEnv` collects them from `.env` files and the process
+      // environment; `publicVars` turns each into a `define` entry, so
+      // `import.meta.env.VITE_API_BASE_URL` is replaced by its literal
+      // value at build time and never becomes a runtime lookup.
+      define: env.publicVars,
     },
     resolve: {
       alias: {
