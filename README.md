@@ -9,8 +9,9 @@
 > **本仓库是 [QuantumNous/new-api](https://github.com/QuantumNous/new-api) 前端面板的二次开发版本。**
 >
 > 核心改动：**将前端从后端仓库中完全剥离，成为可独立构建、独立部署的 SPA**。
-> 配套后端位于独立仓库 [new-api-backend](https://github.com/你的用户名/new-api-backend)，
+> 配套后端位于独立仓库 [new-api-backend](https://github.com/Bitsea19/new-api-backend)，
 > 它作为纯 API 服务运行，不携带任何前端产物。
+> 同步上游时采用快照基线三方合并，**上游更新不会覆盖二开改动**（见文末「同步上游」）。
 
 </div>
 
@@ -229,6 +230,69 @@ deploy/
 | `bun run i18n:sync`    | 同步各语言文件                         |
 
 开发规范见 [AGENTS.md](./AGENTS.md)。
+
+---
+
+## 🔄 同步上游（QuantumNous/new-api）
+
+本仓库是上游前端面板的二开版本，需要持续跟进上游的改动。
+
+### 分支结构
+
+| 分支 / 远程             | 作用                                              |
+| ------------------------ | ------------------------------------------------- |
+| `origin`（Bitsea19/new-api-web） | 本仓库的正式仓库，二开版本推送到这里   |
+| `upstream`（QuantumNous/new-api） | 上游原始仓库，只读，用于拉取上游改动     |
+| `upstream-web`           | 上游 `web/` 目录的快照提交链，作为合并基线        |
+| `master`                 | 二开主分支，包含全部二开改动                      |
+
+`master` 的最底层提交是「上游前端快照基线」，它的内容就是上游 `web/` 目录在某个 commit 上的样子。
+因此合并上游时，git 能以该快照为共同祖先做三方合并：
+
+- 上游改过的文件 → 自动合入
+- 二开改过的文件 → **保留二开版本**（双方都改才会产生冲突）
+
+### 同步步骤
+
+```bash
+# 1. 拉取上游最新提交
+git fetch upstream
+
+# 2. 执行同步脚本（Windows）
+powershell -ExecutionPolicy Bypass -File scripts/sync-upstream.ps1
+```
+
+脚本会完成：拉取上游 → 生成新的快照提交 → 三方合并到当前分支。
+合并后若有冲突文件，脚本会列出清单：
+
+```bash
+# 保留二开版本
+git checkout --ours <文件>
+# 采用上游版本
+git checkout --theirs <文件>
+git add <文件>
+git commit
+```
+
+只想看看会合并什么、不实际改动：
+
+```bash
+powershell -ExecutionPolicy Bypass -File scripts/sync-upstream.ps1 -DryRun
+```
+
+### 日常同步节奏
+
+```bash
+git fetch upstream
+powershell -ExecutionPolicy Bypass -File scripts/sync-upstream.ps1
+# 解决冲突（如果有）→ git commit
+git push origin master
+```
+
+上游的改动只会影响 `src/` 下的业务代码。本仓库的二开集中在
+`src/lib/api-base.ts`、`src/lib/http-client.ts`、`src/lib/auth-session.ts`、
+`src/lib/session-hint.ts` 以及 `Dockerfile` / `docker-compose.yml` / `deploy/`，
+这些文件在上游不存在或未被改动，因此同步时基本不会产生冲突。
 
 ---
 

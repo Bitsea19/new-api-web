@@ -3,7 +3,7 @@
 后端是纯 API 服务器，前端是静态资源包，两者独立构建、独立部署，通过几个环境变量互相定位。
 
 > **本仓库是 [QuantumNous/new-api](https://github.com/QuantumNous/new-api) 前端面板的二开版本。**
-> 配套后端在独立仓库 [new-api-backend](https://github.com/你的用户名/new-api-backend)，
+> 配套后端在独立仓库 [new-api-backend](https://github.com/Bitsea19/new-api-backend)，
 > 同样做了前后端分离改造。
 >
 > 本文中出现的 `new-api-backend` 仓库路径，请替换成你自己的实际路径。
@@ -100,7 +100,7 @@ docker compose logs -f new-api
 > 前后端分离改动（`FRONTEND_BASE_URL`、纯 API 二进制、自定义 CORS 等），行为会与本文不一致。
 
 后端的完整服务器部署步骤见
-[new-api-backend 仓库的部署指南](https://github.com/你的用户名/new-api-backend/blob/main/docs/deployment/server-backend.md)。
+[new-api-backend 仓库的部署指南](https://github.com/Bitsea19/new-api-backend/blob/main/docs/deployment/server-backend.md)。
 
 ### 3.2 用二进制
 
@@ -278,4 +278,4 @@ make build-embedded
 docker build --build-arg BUILD_FRONTEND=true -t new-api:monolith .
 ```
 
-详见 [new-api-backend 仓库的部署指南](https://github.com/你的用户名/new-api-backend/blob/main/docs/deployment/server-backend.md)。
+详见 [new-api-backend 仓库的部署指南](https://github.com/Bitsea19/new-api-backend/blob/main/docs/deployment/server-backend.md)。
