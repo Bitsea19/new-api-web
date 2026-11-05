@@ -252,14 +252,26 @@ deploy/
 - 上游改过的文件 → 自动合入
 - 二开改过的文件 → **保留二开版本**（双方都改才会产生冲突）
 
+### 同步脚本放在本地，不随仓库分发
+
+同步脚本是**本地维护工具**，不纳入版本管理，因此不会出现在 GitHub 仓库里。
+它保存在你本地的 `更新/` 目录：
+
+```
+F:\我的开发\更新\
+  sync-all.ps1        一次同步前后端两个仓库
+  sync-web.ps1        只同步前端仓库（本仓库）
+  sync-backend.ps1    只同步后端仓库
+```
+
 ### 同步步骤
 
 ```bash
-# 1. 拉取上游最新提交
-git fetch upstream
+# 一次同步两个仓库
+powershell -ExecutionPolicy Bypass -File F:\我的开发\更新\sync-all.ps1
 
-# 2. 执行同步脚本（Windows）
-powershell -ExecutionPolicy Bypass -File scripts/sync-upstream.ps1
+# 或者只同步前端
+powershell -ExecutionPolicy Bypass -File F:\我的开发\更新\sync-web.ps1
 ```
 
 脚本会完成：拉取上游 → 生成新的快照提交 → 三方合并到当前分支。
@@ -277,16 +289,16 @@ git commit
 只想看看会合并什么、不实际改动：
 
 ```bash
-powershell -ExecutionPolicy Bypass -File scripts/sync-upstream.ps1 -DryRun
+powershell -ExecutionPolicy Bypass -File F:\我的开发\更新\sync-web.ps1 -DryRun
 ```
 
 ### 日常同步节奏
 
 ```bash
-git fetch upstream
-powershell -ExecutionPolicy Bypass -File scripts/sync-upstream.ps1
+powershell -ExecutionPolicy Bypass -File F:\我的开发\更新\sync-all.ps1
 # 解决冲突（如果有）→ git commit
-git push origin master
+# cd new-api-web && git push origin master
+# cd new-api-backend && git push origin main
 ```
 
 上游的改动只会影响 `src/` 下的业务代码。本仓库的二开集中在
