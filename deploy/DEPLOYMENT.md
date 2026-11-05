@@ -2,6 +2,12 @@
 
 后端是纯 API 服务器，前端是静态资源包，两者独立构建、独立部署，通过几个环境变量互相定位。
 
+> **本仓库是 [QuantumNous/new-api](https://github.com/QuantumNous/new-api) 前端面板的二开版本。**
+> 配套后端在独立仓库 [new-api-backend](https://github.com/你的用户名/new-api-backend)，
+> 同样做了前后端分离改造。
+>
+> 本文中出现的 `new-api-backend` 仓库路径，请替换成你自己的实际路径。
+
 ---
 
 ## 一、架构与变量
@@ -52,25 +58,49 @@ certbot certonly --standalone -d app.example.com -d api.example.com
 
 ## 三、部署后端
 
-### 3.1 用 Docker Compose
+### 3.1 用 Docker Compose（从源码本地构建）
 
-后端仓库的 `docker-compose.yml` 里，把这些行取消注释并改成你的实际值：
+后端仓库的 `docker-compose.yml` 默认就是 `build: { context: . }`，即**在服务器上从当前目录的
+`Dockerfile` 构建镜像**，不会拉取 Docker Hub 上的远程镜像。
+
+上传后端源码到服务器（例如用 `scripts/package-for-server.sh` 打包后上传解压），然后编辑
+`docker-compose.yml`：
 
 ```yaml
-environment:
-  - FRONTEND_BASE_URL=https://app.example.com
-  - API_BASE_URL=https://api.example.com
-  - CORS_ALLOWED_ORIGINS=https://app.example.com
-  - SESSION_COOKIE_SECURE=true
-  - SESSION_COOKIE_SAME_SITE=strict    # 跨可注册域名时改成 none
-  - SESSION_SECRET=<改成随机字符串>     # 多机部署必填
+services:
+  new-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: new-api:local
+    container_name: new-api
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./data:/data
+    environment:
+      - FRONTEND_BASE_URL=https://app.example.com
+      - API_BASE_URL=https://api.example.com
+      - CORS_ALLOWED_ORIGINS=https://app.example.com
+      - SESSION_COOKIE_SECURE=true
+      - SESSION_COOKIE_SAME_SITE=strict    # 跨可注册域名时改成 none
+      - SESSION_SECRET=<改成随机字符串>     # 多机部署必填
+      - TZ=Asia/Shanghai
 ```
 
 启动：
 
 ```bash
-docker compose up -d
+docker compose up -d --build
+docker compose logs -f new-api
 ```
+
+> **不要**把 `image` 改回 `calciumion/new-api:latest`。那是上游官方镜像，**不包含**本二开版本的
+> 前后端分离改动（`FRONTEND_BASE_URL`、纯 API 二进制、自定义 CORS 等），行为会与本文不一致。
+
+后端的完整服务器部署步骤见
+[new-api-backend 仓库的部署指南](https://github.com/你的用户名/new-api-backend/blob/main/docs/deployment/server-backend.md)。
 
 ### 3.2 用二进制
 
@@ -240,3 +270,12 @@ bun run build
 # 后端仓库（产物会被放进 web/dist）
 make build-embedded
 ```
+
+单体二进制的镜像构建方式：
+
+```bash
+# 后端仓库
+docker build --build-arg BUILD_FRONTEND=true -t new-api:monolith .
+```
+
+详见 [new-api-backend 仓库的部署指南](https://github.com/你的用户名/new-api-backend/blob/main/docs/deployment/server-backend.md)。

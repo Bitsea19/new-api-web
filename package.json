@@ -1,8 +1,27 @@
 {
-  "name": "newapi-web",
+  "name": "new-api-web",
   "version": "1.0.0",
   "private": false,
   "type": "module",
+  "description": "New API 的管理面板（前后端分离二开版）—— 独立构建、独立部署的 React 单页应用",
+  "license": "AGPL-3.0",
+  "author": "New API contributors",
+  "homepage": "https://github.com/Bitsea19/new-api-web#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Bitsea19/new-api-web.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Bitsea19/new-api-web/issues"
+  },
+  "keywords": [
+    "new-api",
+    "ai",
+    "llm",
+    "gateway",
+    "dashboard",
+    "react"
+  ],
   "scripts": {
     "dev": "rsbuild dev",
     "build": "rsbuild build",
