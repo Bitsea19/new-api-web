@@ -81,6 +81,10 @@ export default defineConfig(({ envMode }) => {
     },
     server: {
       host: '0.0.0.0',
+      // 5173 rather than Rsbuild's default of 3000: the backend's own
+      // default port is 3000, and having the two on the same port number
+      // invites pointing one at the other by mistake.
+      port: 5173,
       strictPort: false,
       proxy: devProxy,
     },
