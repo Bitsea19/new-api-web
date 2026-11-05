@@ -44,6 +44,32 @@ bun run dev               # http://localhost:5173
 The dev server proxies `/api`, `/v1`, `/v1beta`, `/mj` and `/pg` to
 `http://localhost:3000`. Point it elsewhere with `VITE_REACT_APP_SERVER_URL`.
 
+#### Developing against a remote backend
+
+Keep `VITE_API_BASE_URL` **empty** and set only the proxy target:
+
+```dotenv
+# .env.development.local
+VITE_API_BASE_URL=
+VITE_REACT_APP_SERVER_URL=http://124.156.218.147:3000
+```
+
+```bash
+bun run dev -- --port 5173
+```
+
+Do **not** set `VITE_API_BASE_URL` to the remote address for local
+development. That turns every request into a cross-origin one, and the
+backend's Refresh Cookie is `HttpOnly` with `SameSite=Strict` and
+`Path=/api/user/auth` — a cross-site request from `localhost` to a remote
+host never carries it, so the session breaks on every reload. It would also
+need `CORS_ALLOWED_ORIGINS`, `SameSite=None` and a `Secure` cookie, and a
+`Secure` cookie is never stored by a browser over plain HTTP.
+
+With the proxy in place the browser only ever sees one origin
+(`http://localhost:5173`), so the backend's cookies behave exactly as they do
+in a same-origin deployment.
+
 ### Build
 
 ```bash
