@@ -54,7 +54,23 @@ bun run build              # -> dist/
 
 ## Deployment
 
+> For a complete, step-by-step server deployment - domains, certificates,
+> reverse proxy, verification checklist and troubleshooting - see
+> [deploy/DEPLOYMENT.md](./deploy/DEPLOYMENT.md).
+
 ### Docker
+
+```bash
+docker compose up -d --build
+```
+
+Configure the API address in `.env` first (`cp .env.example .env`):
+
+```dotenv
+VITE_API_BASE_URL=https://api.example.com
+```
+
+Or build the image directly:
 
 ```bash
 docker build \
@@ -62,11 +78,14 @@ docker build \
   --build-arg VITE_REACT_APP_VERSION=v1.2.3 \
   -t new-api-web:latest .
 
-docker run -d -p 8080:80 new-api-web:latest
+docker run -d -p 127.0.0.1:8080:80 new-api-web:latest
 ```
 
 The image contains the static bundle and an nginx that serves it with an
 SPA fallback, so every dashboard route resolves to `index.html`.
+
+`deploy/nginx.conf` is a reverse-proxy template for the separated setup: one
+server block for the dashboard, one for the API.
 
 ### Static hosting
 
