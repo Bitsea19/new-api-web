@@ -1,0 +1,57 @@
+new-api-web Notices
+
+new-api-web
+Copyright (c) QuantumNous and contributors.
+
+This project is licensed under the GNU Affero General Public License v3.0.
+See LICENSE for the full project license terms.
+
+==== Modification Notice (Frontend/Backend Separation Fork) ====
+
+This repository is a modified version of the new-api web console. The
+modifications consist of extracting the frontend from the backend repository
+into a standalone project and making it independently buildable and
+deployable:
+
+  - The React frontend source has been moved out of the new-api backend
+    repository into this standalone project.
+  - The backend address is centralized in a single module
+    (src/lib/api-base.ts), with apiUrl, absoluteApiUrl and apiOrigin helpers
+    built on top of it, instead of being scattered across the codebase.
+  - A build-time variable VITE_API_BASE_URL was introduced so the console can
+    target a backend that is deployed on a different origin. An empty value
+    means same-origin.
+  - The session hint returned by the backend (new_api_has_session) is mirrored
+    into localStorage so a separated deployment can still detect an existing
+    login session across origins.
+  - The build output is a standalone static bundle served by Nginx with an SPA
+    fallback, deployable independently of the backend.
+
+The modified version must not misrepresent the origin of the software and must
+mark its changes in accordance with AGPLv3 Section 7(c).
+
+==== Additional Terms under AGPLv3 Section 7 ====
+
+Pursuant to Section 7(b) of the GNU Affero General Public License version 3,
+the following reasonable legal notice and author attribution must be preserved
+by modified versions in the Appropriate Legal Notices and in any prominent
+about, legal, footer, or attribution location presented by the user interface:
+
+"Frontend design and development by New API contributors."
+
+Modified versions that present a user interface must also preserve a visible
+link to the original project in a prominent about, legal, footer, or
+attribution location:
+
+https://github.com/QuantumNous/new-api
+
+Modified versions must not misrepresent the origin of the software and must
+mark their changes in accordance with AGPLv3 Section 7(c).
+
+==== Third-Party Notices ====
+
+This product includes third-party open source software. Copyright notices and
+license terms for direct third-party dependencies are listed in
+THIRD-PARTY-LICENSES.md.
+
+==== End of Notices ====

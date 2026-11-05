@@ -1,17 +1,11 @@
-# Data Table Components
+# 数据表格组件
 
-This package keeps a stable public API through `index.ts`; feature code should
-continue importing from `@/components/data-table`.
+本包通过 `index.ts` 维持一个稳定的公开 API；功能代码应继续从 `@/components/data-table` 导入。
 
-- `core/`: TanStack table rendering primitives, headers, rows, pagination,
-  loading, empty states, and pinned-column behavior.
-- `layout/`: responsive page-level composition that combines toolbar, desktop
-  table, mobile list, bulk actions, and pagination placement.
-- `toolbar/`: filter/search/view-option controls and selection action toolbar.
-- `static/`: lightweight table rendering for local/static arrays that do not
-  need TanStack state.
-- `hooks/`: table state and filter hooks.
+- `core/`：TanStack 表格的渲染原语、表头、行、分页、加载态、空状态与固定列行为。
+- `layout/`：响应式的页面级组合，把工具栏、桌面表格、移动端列表、批量操作与分页位置组合起来。
+  - `toolbar/`：筛选／搜索／视图选项控件与选中项操作工具栏。
+- `static/`：面向本地／静态数组的轻量表格渲染，不需要 TanStack 状态。
+- `hooks/`：表格状态与筛选相关的钩子。
 
-Keep feature-specific columns, actions, and dialogs inside their feature
-folders. Shared table code belongs here only when it is reusable across more
-than one feature.
+功能专属的列、操作与对话框应留在各自的功能目录中。只有能被一个以上功能复用的共享表格代码，才放在这里。
