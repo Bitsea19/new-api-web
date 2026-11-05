@@ -36,6 +36,21 @@ For commercial licensing, please contact support@quantumnous.com
  */
 export const SESSION_HINT_COOKIE_NAME = 'new_api_has_session'
 
+/**
+ * Where the session hint is mirrored when the API is on another origin.
+ *
+ * The hint cookie is set by the backend, on the backend's origin. A dashboard
+ * served from a different origin cannot read a cookie it did not receive:
+ * `document.cookie` only ever shows the page's own origin's cookies. Without
+ * a mirror, every returning visitor would look anonymous at boot, the
+ * dashboard would never attempt a refresh, and the Refresh Cookie would sit
+ * unused until the user signed in again.
+ *
+ * The mirror lives in `localStorage`, which is scoped to the dashboard's own
+ * origin — exactly the origin that needs the answer.
+ */
+export const SESSION_HINT_STORAGE_KEY = 'newapi:has-session'
+
 /** Read a cookie value out of a `document.cookie`-shaped string. */
 export function readCookie(cookieHeader: string, name: string): string | null {
   for (const part of cookieHeader.split(';')) {
@@ -56,7 +71,49 @@ export function readCookie(cookieHeader: string, name: string): string | null {
  */
 export function hasSessionHint(): boolean {
   if (typeof document === 'undefined') return true
-  return (
-    readCookie(document.cookie, SESSION_HINT_COOKIE_NAME) !== null
-  )
+  if (readCookie(document.cookie, SESSION_HINT_COOKIE_NAME) !== null) {
+    return true
+  }
+  return hasSessionHintMirror()
+}
+
+/**
+ * Whether the local mirror claims a session exists.
+ *
+ * A storage that cannot be read (private mode, disabled cookies, a
+ * non-DOM test environment) is treated as "no answer" rather than as
+ * "no session": the mirror is only ever an optimization.
+ */
+export function hasSessionHintMirror(): boolean {
+  if (typeof localStorage === 'undefined') return false
+  try {
+    return localStorage.getItem(SESSION_HINT_STORAGE_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * Record whether the dashboard believes a login session exists.
+ *
+ * Called whenever the frontend learns the answer from the server — after a
+ * successful sign-in, after a refresh, and after a sign-out — so that a page
+ * reload on a separated deployment still knows a Refresh Cookie is worth
+ * presenting.
+ *
+ * A storage that cannot be written is not an error: the hint is an
+ * optimization, and the next request to the server settles the question
+ * anyway.
+ */
+export function writeSessionHintMirror(hasSession: boolean): void {
+  if (typeof localStorage === 'undefined') return
+  try {
+    if (hasSession) {
+      localStorage.setItem(SESSION_HINT_STORAGE_KEY, '1')
+    } else {
+      localStorage.removeItem(SESSION_HINT_STORAGE_KEY)
+    }
+  } catch {
+    // A storage failure must never break authentication.
+  }
 }

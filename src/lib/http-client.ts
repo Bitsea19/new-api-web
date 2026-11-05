@@ -25,6 +25,7 @@ import {
   getFreshAuthHeaders,
   refreshAuthentication,
 } from '@/lib/auth-session'
+import { API_BASE_URL } from '@/lib/api-base'
 import { handleServerError } from '@/lib/handle-server-error'
 import {
   getServerErrorMessage,
@@ -47,7 +48,10 @@ declare module 'axios' {
 export type ApiRequestConfig = AxiosRequestConfig
 
 export const api = axios.create({
-  baseURL: '',
+  // An empty base URL keeps every request relative, which is the same-origin
+  // deployment. A configured base URL sends the request to the separately
+  // deployed backend, absolute and cross-origin.
+  baseURL: API_BASE_URL,
   withCredentials: true,
   headers: {
     // no-store forbids storage; no-cache also revalidates any older cached response.

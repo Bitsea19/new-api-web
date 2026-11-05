@@ -20,6 +20,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { SSE } from 'sse.js'
 
 import { getFreshAuthHeaders } from '@/lib/api'
+import { absoluteApiUrl } from '@/lib/api-base'
 
 import { API_ENDPOINTS, ERROR_MESSAGES } from '../constants'
 import {
@@ -192,7 +193,9 @@ export function useStreamRequest() {
     controllerRef.current = createStreamRequestController({
       getHeaders: getFreshAuthHeaders,
       createSource: (payload, headers) =>
-        new SSE(API_ENDPOINTS.CHAT_COMPLETIONS, {
+        // An absolute URL: the stream has to reach the backend, which in a
+        // separated deployment is not the page's own origin.
+        new SSE(absoluteApiUrl(API_ENDPOINTS.CHAT_COMPLETIONS), {
           headers,
           method: 'POST',
           payload: JSON.stringify(payload),
